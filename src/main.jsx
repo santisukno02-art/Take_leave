@@ -3,7 +3,8 @@ import{createRoot}from'react-dom/client';
 import{createClient}from'@supabase/supabase-js';
 import{CalendarDays,ChevronLeft,ChevronRight,Plus,Users,X,Trash2,Pencil,RefreshCw,Search,CheckCircle2,AlertTriangle,Info}from'lucide-react';
 import'./styles.css';
-const url=import.meta.env.VITE_SUPABASE_URL,key=import.meta.env.VITE_SUPABASE_ANON_KEY;
+const url=import.meta.env.VITE_SUPABASE_URL;
+const key=import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY||import.meta.env.VITE_SUPABASE_ANON_KEY;
 const db=url&&key&&!url.includes('YOUR_PROJECT_ID')?createClient(url,key):null;
 const months=['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'],week=['อา.','จ.','อ.','พ.','พฤ.','ศ.','ส.'];
 const iso=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
@@ -24,7 +25,7 @@ function App(){
  async function toggle(emp){let{error}=await db.from('employees').update({active:!emp.active}).eq('id',emp.id);if(error)SError(error.message);else load()}
  async function del(r){if(!confirm('ยืนยันลบรายการลานี้หรือไม่?'))return;let{error}=await db.from('leave_requests').delete().eq('id',r.id);if(error)SNotice(error.message);else{SNotice('ลบรายการแล้ว');load()}}
  async function addType(){let name=prompt('ชื่อประเภทการลาใหม่');if(!name?.trim())return;let{error}=await db.from('leave_types').insert({name:name.trim(),color:'#6478b8'});if(error)SError(error.message);else load()}
- if(!db)return <div className="setup"><div className="setup-card"><div className="logo"><CalendarDays/></div><small>INITIAL SETUP</small><h1>เชื่อมต่อ Supabase</h1><p>ตั้งค่า URL และ key ผ่านไฟล์ <code>.env.local</code> ตอนพัฒนา หรือ Environment Variables ใน Vercel ตาม README.md</p><div className="warning"><AlertTriangle size={18}/>ห้ามใช้ service_role key ในเว็บหรือบน GitHub</div><ol><li>สร้างโปรเจกต์ Supabase</li><li>รัน <code>supabase/schema.sql</code> ใน SQL Editor</li><li>ตั้งค่า <code>VITE_SUPABASE_URL</code> และ <code>VITE_SUPABASE_ANON_KEY</code></li><li>เริ่มด้วย <code>npm run dev</code> หรือ Deploy บน Vercel</li></ol></div></div>;
+ if(!db)return <div className="setup"><div className="setup-card"><div className="logo"><CalendarDays/></div><small>INITIAL SETUP</small><h1>เชื่อมต่อ Supabase</h1><p>ตั้งค่า URL และ key ผ่านไฟล์ <code>.env.local</code> ตอนพัฒนา หรือ Environment Variables ใน Vercel ตาม README.md</p><div className="warning"><AlertTriangle size={18}/>ห้ามใช้ service_role key ในเว็บหรือบน GitHub</div><ol><li>สร้างโปรเจกต์ Supabase</li><li>รัน <code>supabase/schema.sql</code> ใน SQL Editor</li><li>ตั้งค่า <code>VITE_SUPABASE_URL</code> และ <code>VITE_SUPABASE_PUBLISHABLE_KEY</code> หรือ <code>VITE_SUPABASE_ANON_KEY</code></li><li>เริ่มด้วย <code>npm run dev</code> หรือ Deploy บน Vercel</li></ol></div></div>;
  let cells=[...Array(new Date(month.getFullYear(),month.getMonth(),1).getDay()).fill(null),...Array.from({length:new Date(month.getFullYear(),month.getMonth()+1,0).getDate()},(_,i)=>i+1)];while(cells.length%7)cells.push(null);
  let filtered=visible.filter(r=>`${r.employees?.name||''} ${r.leave_types?.name||''} ${r.reason||''}`.toLowerCase().includes(search.toLowerCase()));
  return <div><header><div className="logo"><CalendarDays/></div><div className="brand"><b>ปฏิทินจองวันลา</b><small>TEAM LEAVE PLANNER</small></div><div className="actions"><button className="btn light" onClick={()=>SManage(!manage)}><Users size={16}/> พนักงาน</button><button className="btn primary" onClick={()=>newBooking(iso(new Date()))}><Plus size={17}/> จองวันลา</button></div></header><main>
