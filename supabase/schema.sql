@@ -37,10 +37,13 @@ alter table public.leave_requests enable row level security;
 -- นโยบายสาธารณะตามความต้องการ: ทุกคนที่มีลิงก์สามารถดู/เพิ่ม/แก้ไข/ลบได้
 -- ห้ามใช้กับข้อมูลละเอียดอ่อนโดยไม่เพิ่มระบบยืนยันตัวตน/สิทธิ์
 do $$ declare t text; op text; begin
- foreach t in array array['employees','leave_types','leave_requests'] loop
+ foreach t in array array['leave_types','leave_requests'] loop
   execute format('drop policy if exists "public_all_%s" on public.%I',t,t);
   execute format('create policy "public_all_%s" on public.%I for all to anon, authenticated using (true) with check (true)',t,t);
  end loop;
 end $$;
 grant usage on schema public to anon, authenticated;
 grant select,insert,update,delete on public.employees,public.leave_types,public.leave_requests to anon,authenticated;
+
+-- Employee writes are performed by the Vercel API after server-side Admin authentication.
+drop policy if exists "public_all_employees" on public.employees;
